@@ -16,20 +16,61 @@ https://ieeexplore.ieee.org/abstract/document/8988767
 
 # Installation
 
-First all necessary files need to be copied to the LLVM source tree. This line required to be edited:
+Install all necessary tools. (LLVM8 and AccelSeeker Analysis passes)
+
+If you already have LLVM8 installed you may skip A. and proceed to B. Otherwise proceed to A. (suggested).
+
+A. bootstrap.8.0.sh 
+
+
+    ./bootstrap.8.0.sh
+
+
+The bootstrap.8.0.sh script downloads and builds LLVM8 needed to compile and load the AccelSeeker passes. 
+
+If, for any reason, you move/rename LLVM8 source tree, then you have to modify the
+"BIN_DIR_LLVM" and "LIB_DIR_LLVM" Paths in the Makefile "Makefile_ClrFreqCFGPrinter" inside the 
+directory for each benchmark accordingly. 
+
+
+-- If LLVM8 is already installed: --
+
+B.
+
+All necessary files containing the analysis passes need to be copied to the LLVM8 source tree. This line requires to be edited according to your own path to your LLVM8 installation:
 
     export LLVM_SRC_TREE="path/to/llvm/source/root"
 
 In order to provide the correct path to your LLVM source tree. 
  
-
     ./bootstrap.sh
 
-
-Then you can recompile it using make and a new Shared Object (SO) should be created in order to load the AccelSeeker
-passes.
+LLVM8 can then be recompiled using make and a new Shared Object (SO) should be created in order to load the AccelSeeker passes.
 
     cd "path/to/llvm/build" && make
+    
+
+# Usage
+
+    cd h264_ir_orig
+
+    ./run_sys_aw.sh
+
+This script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
+The files generated are: FCI.txt  IO.txt  LA.txt
+
+        ./generate_accelcands_list.sh
+
+This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
+The files generated are: MCI.txt  MC.txt
+
+The MCI.txt file will be used by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup)
+under various Costs (Area budgets or HW resources).
+
+To delete all data files use:
+
+        scripts/delete_all_data_files.sh 
+
 
 # Methodology
 
@@ -69,27 +110,6 @@ The process is as follows:
     The Selection phase takes place where a subset of the initial set of potential candidates for acceleration
     are selected, so that their cumulative speedup is maximized and their cumulative area does not exceed a user-defined area budget.
 
-
-# Usage
-
-	cd h264_ir_orig
-
-	./run_sys_aw.sh
-
-This script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
-The files generated are: FCI.txt  IO.txt  LA.txt
-
-        ./generate_accelcands_list.sh
-
-This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
-The files generated are: MCI.txt  MC.txt
-
-The MCI.txt file will be used by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup)
-under various Costs (Area budgets or HW resources).
-
-To delete all data files use:
-
-        scripts/delete_all_data_files.sh 
 
 ** Modifications are needed to comply for every benchmark. **
 
