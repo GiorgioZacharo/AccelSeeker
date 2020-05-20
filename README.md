@@ -1,8 +1,8 @@
-# AccelSeeker
+# AccelSeekerTool
 
 Overview
 
-    The AccelSeeker© framework is a plugin of LLVM version (3.8) and consists of an LLVM Analysis Pass. It 
+    The AccelSeeker© framework is a plugin of LLVM version (3.8) and consists of an LLVM Analysis Pass. It
     performs identification of valid candidates for acceleration (AccelCands) and estimates their performance
     in terms of speedup gains (cycles saved - merit) and hardware resources required (area - cost).
 
@@ -19,7 +19,7 @@ Overview
 
          clang -O3 -fprofile-instr-generate bench.c -o bench_instrumented
 
-        The bench.profdata file generated and used to generate the respective *.ir files of the 
+        The bench.profdata file generated and used to generate the respective *.ir files of the
         benchmark.
 
          bench_instrumented $(BENCH_COMMAND_LINE_PARAMETERS)
@@ -27,7 +27,7 @@ Overview
 
          clang -S -emit-llvm -O3 -fprofile-instr-use=$(BENCH).profdata -o bench.ir bench.c
 
-     
+
     b) AccelCands Identification and Merit and Cost estimation
 
         The Analysis Passes are being in use. We are fproviding as input the *.ir files that were produced
@@ -38,77 +38,55 @@ Overview
         Now every Basic Block has the respective frequency annotated in the output *.bbfreq.ll files.
         This information is going to be used next.
 
-         opt -load ~giorgio/llvm_new/build/lib/IdentifyAccelCands.so -IdentifyAccelCands -stats *.bbfreq.ll > /dev/null 
+         opt -load ~giorgio/llvm_new/build/lib/IdentifyAccelCands.so -IdentifyAccelCands -stats *.bbfreq.ll > /dev/null
 
-        
-        The output from loading this pass provides us with a full analysis of the AccelCands. 
+
+        The output from loading this pass provides us with a full analysis of the AccelCands.
 
 
     c) AccelCands Selection (candidate selection)
 
        Candidate Selection is performed by using an exact selection algorithm (not included in this package).
+
+
+Installation
+
+First you need to copy all the necessary files to your LLVM source tree. You need to edit though this line: 
+
+    export LLVM_SRC_TREE="path/to/llvm/source/root"
+
+In order to provide the correct path to your LLVM source tree. 
  
- 
- Makefiles
 
-    There is a Makefile_region file for every benchmark that needs minor modifications
-    in order to be used for each of them.
-
-    The Makefile_region is included in the Makefile_orig of every benchmark.
-    Makefile_orig is simply a copy of the original Makefile, wich has been slightly modified
-    to use the Makefile_region. (to include the Makefile_Region) 
+    ./bootstrap.sh
 
 
-    
-    profile
+Then you can recompile it using make and a new SO should be created in order to load the BBFreqInfo
+pass.
 
-        The profile rule compiles all the needed objects and generates the instrumented
-        version of the binary. Using the the bench.profdata file generated, the respective
-        *.ir files are produced with the initial profiling annotation.
+	cd "path/to/llvm/build" && make
 
+# Usage
 
-        e.g.
-        
-        make -f Makefile_orig profile
-       
-    region
+	cd h264_ir_orig
 
-        The region rule requires profile. It receives as input the *.ir files and loads the BB 
-        frequency Annotation Pass and outputs the *.bbfreq.ll files. In sequence, these file are
-        used to load the final Analysis of Region Identification Pass.
+	./run_sys_aw.sh
 
+This script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
+The files generated are: FCI.txt  IO.txt  LA.txt
 
-        e.g.
-        
-        make -f Makefile_orig region
+        ./generate_accelcands_list.sh
 
+This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
+The files generated are: MCI.txt  MC.txt
 
-    sort_regions
-        
-        Runs the shell script that executes make region, gets the relevant information for each Region
-        and sorts them out according to density.
+The MCI.txt file will be used by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup)
+under various Costs (Area budgets or HW resources).
 
-        e.g. 
+To delete all data files use:
 
-            Good 576912 Dens 3898 Func BlockSAD Reg for.body6 => for.inc120 I 38 O 0 Loads 16 Stores 1
-            Good 30906  Dens 2207 Func main Reg for.body3 => for.inc16 I 4 O 0 Loads 0 Stores 2 
+        scripts/delete_all_data_files.sh 
 
+# Author
 
-Usage
-
-    The Makefile is used as follows:
-
-    e.g.
-    
-    make -f Makefile_orig profile
-    make -f Makefile_orig region
-
-
-   ** Modifications are needed to comply for every benchmark. **
-
-
-
-# Authors
-
-Georgios Zacharopoulos <georgios.zacharopoulos@usi.ch>
-Date: January, 2020    
+Georgios Zacharopoulos georgios@seas.harvard.edu Date: May, 2020

@@ -5,9 +5,12 @@ if(WIN32 OR CYGWIN)
   set(LLVM_LINK_COMPONENTS Core Support)
 endif()
 
-add_llvm_loadable_module( IdentifyRegionsSA
-  IdentifyRegionsSA.cpp
+#add_llvm_library( IdentifyRegionsSA MODULE
+add_llvm_library( AccelSeeker MODULE
+  AccelSeeker.cpp
 
   DEPENDS
   intrinsics_gen
+  #PLUGIN_TOOL
+  #opt
   )
