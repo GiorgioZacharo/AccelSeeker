@@ -1,17 +1,26 @@
-# AccelSeekerTool
+# AccelSeeker
 
 Overview
 
-The AccelSeeker© framework is a tool for automatically identifying and selecting HW accelerators  of LLVM8 compiler infrastructure and consists of an LLVM Analysis Pass. It
-    performs identification of valid candidates for acceleration (AccelCands) and estimates their performance
-    in terms of speedup gains (cycles saved - merit) and hardware resources required (area - cost).
+The AccelSeeker© framework is a tool for automatically identifying and selecting HW accelerators directly from 
+the application source files. It is built within LLVM8 compiler infrastructure and consists of Analysis Passes
+that estimate Software (SW) latency, Hardware (HW) latency, Area and I/O requirements. Subsequently, an exact 
+selection algorithm selects the subset of HW accelerators that maximizes performance (speedup) under a user
+defined area (HW resources) budget.
 
-    The process is as follows:
+If you use AccelSeeker in your research, we would appreciate a citation to:
+Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.
+Georgios Zacharopoulos, Lorenzo Ferretti, Giovanni Ansaloni, Giuseppe Di Guglielmo, Luca Carloni, Laura Pozzi
+https://ieeexplore.ieee.org/abstract/document/8988767
 
-    a) Profiling
+AccelSeeker performs identification of valid candidates for acceleration (AccelCands) and estimates their performance in terms of speedup gains (cycles saved or hereafter called Merit) and hardware resources required 
+(area or hereafter called Cost).
 
-        The existing tools of LLVM are used to generate an instrumented version of the binary of
-        a provided benchmark.
+The process is as follows:
+
+    a) Dynamic Profiling of the runtime.
+
+    The existing tools of LLVM are used to generate an instrumented version of the binary of a provided benchmark.
 
         http://clang.llvm.org/docs/UsersManual.html#profiling-with-instrumentation
 
@@ -19,8 +28,7 @@ The AccelSeeker© framework is a tool for automatically identifying and selectin
 
          clang -O3 -fprofile-instr-generate bench.c -o bench_instrumented
 
-        The bench.profdata file generated and used to generate the respective *.ir files of the
-        benchmark.
+    The bench.profdata file generated and used to generate the respective *.ir files of the benchmark.
 
          bench_instrumented $(BENCH_COMMAND_LINE_PARAMETERS)
          llvm-profdata merge -output=$(BENCH).profdata default.profraw
@@ -28,30 +36,23 @@ The AccelSeeker© framework is a tool for automatically identifying and selectin
          clang -S -emit-llvm -O3 -fprofile-instr-use=$(BENCH).profdata -o bench.ir bench.c
 
 
-    b) AccelCands Identification and Merit and Cost estimation
+    b) AccelCands Identification and performance/area estimation (Merit/Cost estimation).
 
-        The Analysis Passes are being in use. We are fproviding as input the *.ir files that were produced
-        in the previous step.
+    The Analysis Passes are invoked. We are providing as input the *.ir files that were generated in the previous step.
 
-         opt -load ~giorgio/llvm_new/build/lib/BBFreqAnnotation.so -O3 -BBFreqAnnotation -stats -S *.ir > *.bbfreq.ll
-
-        Now every Basic Block has the respective frequency annotated in the output *.bbfreq.ll files.
-        This information is going to be used next.
-
-         opt -load ~giorgio/llvm_new/build/lib/IdentifyAccelCands.so -IdentifyAccelCands -stats *.bbfreq.ll > /dev/null
+    The output from loading this pass provides us with a full analysis of the AccelCands regarding their Merit, Cost estimation and the application of the overlapping rule, so that candidates whose computation completely
+    overlaps with the computation of other candidates are mutually exclusive.
 
 
-        The output from loading this pass provides us with a full analysis of the AccelCands.
+    c) AccelCands Selection (HW accelerators selection)
 
-
-    c) AccelCands Selection (candidate selection)
-
-       Candidate Selection is performed by using an exact selection algorithm (not included in this package).
+    The Selection phase takes place where a subset of the initial set of potential candidates for acceleration
+    are selected, so that their cumulative speedup is maximized and their cumulative area does not exceed a user-defined area budget.
 
 
 Installation
 
-First you need to copy all the necessary files to your LLVM source tree. You need to edit though this line: 
+First all necessary files need to be copied to the LLVM source tree. This line required to be edited:
 
     export LLVM_SRC_TREE="path/to/llvm/source/root"
 
@@ -61,8 +62,8 @@ In order to provide the correct path to your LLVM source tree.
     ./bootstrap.sh
 
 
-Then you can recompile it using make and a new SO should be created in order to load the BBFreqInfo
-pass.
+Then you can recompile it using make and a new Shared Object (SO) should be created in order to load the AccelSeeker
+passes.
 
 	cd "path/to/llvm/build" && make
 
