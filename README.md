@@ -89,6 +89,8 @@ To delete all data files use:
 
         scripts/delete_all_data_files.sh 
 
+** Modifications are needed to comply for every benchmark. **
+
 # Author
 
 Georgios Zacharopoulos georgios@seas.harvard.edu Date: May, 2020
