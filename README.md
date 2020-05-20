@@ -2,7 +2,7 @@
 
 Overview
 
-    The AccelSeeker© framework is a plugin of LLVM version (3.8) and consists of an LLVM Analysis Pass. It
+The AccelSeeker© framework is a tool for automatically identifying and selecting HW accelerators  of LLVM8 compiler infrastructure and consists of an LLVM Analysis Pass. It
     performs identification of valid candidates for acceleration (AccelCands) and estimates their performance
     in terms of speedup gains (cycles saved - merit) and hardware resources required (area - cost).
 
