@@ -11,8 +11,7 @@ defined area (HW resources) budget.
 If you use AccelSeeker in your research, we would appreciate a citation to:
 
 Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.
-Georgios Zacharopoulos, Lorenzo Ferretti, Giovanni Ansaloni, Giuseppe Di Guglielmo, Luca Carloni, Laura Pozzi
-
+Georgios Zacharopoulos, Lorenzo Ferretti, Giovanni Ansaloni, Giuseppe Di Guglielmo, Luca Carloni, Laura Pozzi.      
 https://ieeexplore.ieee.org/abstract/document/8988767
 
 AccelSeeker performs identification of valid candidates for acceleration (AccelCands) and estimates their performance in terms of speedup gains (cycles saved or hereafter called Merit) and hardware resources required 
