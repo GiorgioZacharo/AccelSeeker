@@ -1,6 +1,6 @@
 # AccelSeeker
 
-Overview
+# Overview
 
 The AccelSeeker© framework is a tool for automatically identifying and selecting HW accelerators directly from 
 the application source files. It is built within LLVM8 compiler infrastructure and consists of Analysis Passes
@@ -13,6 +13,25 @@ If you use AccelSeeker in your research, we would appreciate a citation to:
 Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.
 Georgios Zacharopoulos, Lorenzo Ferretti, Giovanni Ansaloni, Giuseppe Di Guglielmo, Luca Carloni, Laura Pozzi.      
 https://ieeexplore.ieee.org/abstract/document/8988767
+
+# Installation
+
+First all necessary files need to be copied to the LLVM source tree. This line required to be edited:
+
+    export LLVM_SRC_TREE="path/to/llvm/source/root"
+
+In order to provide the correct path to your LLVM source tree. 
+ 
+
+    ./bootstrap.sh
+
+
+Then you can recompile it using make and a new Shared Object (SO) should be created in order to load the AccelSeeker
+passes.
+
+    cd "path/to/llvm/build" && make
+
+# Methodology
 
 AccelSeeker performs identification of valid candidates for acceleration (AccelCands) and estimates their performance in terms of speedup gains (cycles saved or hereafter called Merit) and hardware resources required 
 (area or hereafter called Cost).
@@ -50,23 +69,6 @@ The process is as follows:
     The Selection phase takes place where a subset of the initial set of potential candidates for acceleration
     are selected, so that their cumulative speedup is maximized and their cumulative area does not exceed a user-defined area budget.
 
-
-Installation
-
-First all necessary files need to be copied to the LLVM source tree. This line required to be edited:
-
-    export LLVM_SRC_TREE="path/to/llvm/source/root"
-
-In order to provide the correct path to your LLVM source tree. 
- 
-
-    ./bootstrap.sh
-
-
-Then you can recompile it using make and a new Shared Object (SO) should be created in order to load the AccelSeeker
-passes.
-
-	cd "path/to/llvm/build" && make
 
 # Usage
 
