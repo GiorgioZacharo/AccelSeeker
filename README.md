@@ -10,7 +10,7 @@ defined area (HW resources) budget.
 
 If you use AccelSeeker in your research, we would appreciate a citation to:
 
-Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.
+Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.\n
 Georgios Zacharopoulos, Lorenzo Ferretti, Giovanni Ansaloni, Giuseppe Di Guglielmo, Luca Carloni, Laura Pozzi.      
 https://ieeexplore.ieee.org/abstract/document/8988767
 
@@ -48,7 +48,7 @@ In order to provide the correct path to your LLVM source tree.
 LLVM8 can then be recompiled using make and a new Shared Object (SO) should be created in order to load the AccelSeeker passes.
 
     cd "path/to/llvm/build" && make
-    
+
 
 # Usage
 
