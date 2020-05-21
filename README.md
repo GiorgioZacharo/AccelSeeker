@@ -51,7 +51,7 @@ LLVM8 can then be recompiled using make and a new Shared Object (SO) should be c
 
 # Usage
 
-For testing the H.264 decoder https://github.com/adsc-hls/synthesizable_h264 synthesizable version  Xinheng Liu et al by University of Illinois at Urbana-Champaign is used.
+For testing the H.264 decoder https://github.com/adsc-hls/synthesizable_h264 synthesizable version by Xinheng Liu et al, University of Illinois at Urbana-Champaign is used.
 
     cd h264_ir_orig
 
