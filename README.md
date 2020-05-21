@@ -10,7 +10,7 @@ defined area (HW resources) budget.
 
 If you use AccelSeeker in your research, we would appreciate a citation to:
 
-Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.           
+**Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.**           
 Georgios Zacharopoulos, Lorenzo Ferretti, Giovanni Ansaloni, Giuseppe Di Guglielmo, Luca Carloni, Laura Pozzi.      
 https://ieeexplore.ieee.org/abstract/document/8988767
 
@@ -51,7 +51,7 @@ LLVM8 can then be recompiled using make and a new Shared Object (SO) should be c
 
 # Usage
 
-For testing the H.264 decoder https://github.com/adsc-hls/synthesizable_h264 synthesizable version  Xinheng Liu et al by University of Illinois at Urbana-Champaign is used.
+For testing the H.264 decoder https://github.com/adsc-hls/synthesizable_h264 synthesizable version by Xinheng Liu et al of University of Illinois at Urbana-Champaign is used.
 
     cd h264_ir_orig
 
@@ -59,7 +59,7 @@ First we make sure that the line in "run_sys_aw.sh" points to the path of the LL
 
     LLVM_BUILD=path/to/llvm/build
 
-1) Identification of Candidates for Acceleration and Estimation of Latency, Area and I/O requirements.   
+## 1) Identification of Candidates for Acceleration and Estimation of Latency, Area and I/O requirements.   
 
 The following script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
 The files generated are: FCI.txt  IO.txt  LA.txt 
@@ -68,15 +68,15 @@ The files generated are: FCI.txt  IO.txt  LA.txt
 
 
 
-2) Merit, Cost Estimation of Candidates for Acceleration and Application of the Overlapping Rule.
+## 2) Merit, Cost Estimation of Candidates for Acceleration and Application of the Overlapping Rule.
 
-This script generates the Merit/Cost (MC) file along with the implementation of the Overlapping rule in the final Merit/Cost/Indexes (MCI) file.
+The following script generates the Merit/Cost (MC) file along with the implementation of the Overlapping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
 
     ./generate_accelcands_list.sh
 
 
-3) Selection of Candidates for Acceleration.
+## 3) Selection of Candidates for Acceleration.
 
 The MCI.txt file can be used subsequently by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup) under various Costs (Area budgets or HW resources).
 
