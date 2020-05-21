@@ -10,7 +10,7 @@ defined area (HW resources) budget.
 
 If you use AccelSeeker in your research, we would appreciate a citation to:
 
-Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.\\
+Compiler-Assisted Selection of Hardware Acceleration Candidates from Application Source Code.           
 Georgios Zacharopoulos, Lorenzo Ferretti, Giovanni Ansaloni, Giuseppe Di Guglielmo, Luca Carloni, Laura Pozzi.      
 https://ieeexplore.ieee.org/abstract/document/8988767
 
