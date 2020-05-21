@@ -20,8 +20,7 @@ First we need to install all necessary tools. (LLVM8 and AccelSeeker Analysis pa
 
 If you already have LLVM8 installed you may skip A. and proceed to B. Otherwise please proceed to A. (suggested).
 
-A. bootstrap.8.0.sh 
-
+A.
 
     ./bootstrap.8.0.sh
 
