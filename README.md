@@ -55,10 +55,9 @@ First edit this line according to the path of your LLVM8 build directory:
 
     LLVM_BUILD=path/to/llvm/build
 
-Then:    
+1) Identification of Candidates for Acceleration and Estimation of Latency, Area and I/O    
 
     cd h264_ir_orig
-
     ./run_sys_aw.sh
 
 This script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
@@ -69,10 +68,10 @@ The files generated are: FCI.txt  IO.txt  LA.txt
 This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
 
+
+3) Selection of Candidates for Acceleration
+
 The MCI.txt file can be used subsequently by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup) under various Costs (Area budgets or HW resources).
-
-# Selection of Candidates for Acceleration
-
 
     ../accel_selection_algo_src/accel-find MCI.txt AREA_BUDGET
 
