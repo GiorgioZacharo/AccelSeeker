@@ -65,7 +65,7 @@ The files generated are: FCI.txt  IO.txt  LA.txt
 
 2) Merit, Cost Estimation of Candidates for Acceleration and Application of the Overlappping Rule
 
-    ./generate_accelcands_list.sh
+        ./generate_accelcands_list.sh
 
 This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
