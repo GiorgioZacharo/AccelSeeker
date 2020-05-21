@@ -16,9 +16,9 @@ https://ieeexplore.ieee.org/abstract/document/8988767
 
 # Installation
 
-Install all necessary tools. (LLVM8 and AccelSeeker Analysis passes)
+First we need to install all necessary tools. (LLVM8 and AccelSeeker Analysis passes)
 
-If you already have LLVM8 installed you may skip A. and proceed to B. Otherwise proceed to A. (suggested).
+If you already have LLVM8 installed you may skip A. and proceed to B. Otherwise please proceed to A. (suggested).
 
 A. bootstrap.8.0.sh 
 
@@ -26,10 +26,10 @@ A. bootstrap.8.0.sh
     ./bootstrap.8.0.sh
 
 
-The bootstrap.8.0.sh script downloads and builds LLVM8 needed to compile and load the AccelSeeker passes. 
+The bootstrap.8.0.sh script downloads and builds LLVM8, which is needed to compile and load the AccelSeeker passes. 
 
 If, for any reason, you move/rename LLVM8 source tree, then you have to modify the
-"BIN_DIR_LLVM" and "LIB_DIR_LLVM" Paths in the Makefile "Makefile_ClrFreqCFGPrinter" inside the 
+"LLVM_BUILD" Paths in the Makefile and the run_sys_aw.sh script, that invokes the AccelSeeker passes, inside the 
 directory for each benchmark accordingly. 
 
 

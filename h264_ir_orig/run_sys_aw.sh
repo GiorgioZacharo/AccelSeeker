@@ -9,13 +9,14 @@
 #!/bin/bash
 
 # LLVM build directory - Edit this line.
-LLVM_BUILD=~georgios/llvm-8.0.0//build
+# LLVM_BUILD=path/to/llvm/build
+LLVM_BUILD=~../llvm-8.0.0//build
 
 TOP_LEVEL=6
 IRDIR=IR
 
 #cd $IRDIR
-#~georgios/llvm-8.0.0//build/bin/llvm-link -S  *.ir -o ../h264.ir
+#$LLVM_BUILD/bin/llvm-link -S  *.ir -o ../h264.ir
 #cd ..
 
 
