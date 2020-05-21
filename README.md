@@ -37,13 +37,13 @@ directory for each benchmark accordingly.
 
 B.
 
-All necessary files containing the analysis passes need to be copied to the LLVM8 source tree. This line requires to be edited according to your own path to your LLVM8 installation:
+All necessary files containing the analysis passes need to be copied to the LLVM8 source tree. This line requires to be edited according to the path of your LLVM8 installation:
 
     export LLVM_SRC_TREE="path/to/llvm/source/root"
 
 In order to provide the correct path to your LLVM source tree. 
  
-    ./bootstrap.sh
+    ./bootstrap_AS_passes.sh
 
 LLVM8 can then be recompiled using make and a new Shared Object (SO) should be created in order to load the AccelSeeker passes.
 
@@ -51,6 +51,12 @@ LLVM8 can then be recompiled using make and a new Shared Object (SO) should be c
 
 
 # Usage
+
+First edit this line according to the path of your LLVM8 build directory:
+
+    LLVM_BUILD=path/to/llvm/build
+
+Then:    
 
     cd h264_ir_orig
 
