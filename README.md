@@ -65,7 +65,7 @@ Then:
 This script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
 The files generated are: FCI.txt  IO.txt  LA.txt
 
-        ./generate_accelcands_list.sh
+    ./generate_accelcands_list.sh
 
 This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
@@ -75,7 +75,7 @@ under various Costs (Area budgets or HW resources).
 
 To delete all data files use:
 
-        scripts/delete_all_data_files.sh 
+    ../scripts/delete_all_data_files.sh 
 
 
 # Methodology
