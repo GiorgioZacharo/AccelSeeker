@@ -71,7 +71,7 @@ The files generated are: MCI.txt  MC.txt
 
 The MCI.txt file can be used subsequently by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup) under various Costs (Area budgets or HW resources).
 
-    # Selection of Candidates for Acceleration
+# Selection of Candidates for Acceleration
 
 
     ../accel_selection_algo_src/accel-find MCI.txt AREA_BUDGET
