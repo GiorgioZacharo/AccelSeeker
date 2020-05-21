@@ -10,7 +10,7 @@
 
 # LLVM build directory - Edit this line.
 # LLVM_BUILD=path/to/llvm/build
-LLVM_BUILD=~../llvm-8.0.0//build
+LLVM_BUILD=../llvm-8.0.0//build
 
 TOP_LEVEL=6
 IRDIR=IR
