@@ -69,8 +69,11 @@ The files generated are: FCI.txt  IO.txt  LA.txt
 This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
 
-The MCI.txt file will be used by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup)
-under various Costs (Area budgets or HW resources).
+The MCI.txt file can be used subsequently by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup) under various Costs (Area budgets or HW resources).
+
+    ../accel_selection_algo_src/accel-find MCI.txt AREA_BUDGET
+
+e.g.  ../accel_selection_algo_src/accel-find MCI.txt 1000
 
 To delete all data files use:
 
