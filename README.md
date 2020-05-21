@@ -59,7 +59,7 @@ First we make sure that the line in "run_sys_aw.sh" points to the path of the LL
 
     LLVM_BUILD=path/to/llvm/build
 
-1) Identification of Candidates for Acceleration and Estimation of Latency, Area and I/O   
+1) Identification of Candidates for Acceleration and Estimation of Latency, Area and I/O requirements.   
 
 The following script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
 The files generated are: FCI.txt  IO.txt  LA.txt 
@@ -68,15 +68,15 @@ The files generated are: FCI.txt  IO.txt  LA.txt
 
 
 
-2) Merit, Cost Estimation of Candidates for Acceleration and Application of the Overlappping Rule
+2) Merit, Cost Estimation of Candidates for Acceleration and Application of the Overlapping Rule.
 
-This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
+This script generates the Merit/Cost (MC) file along with the implementation of the Overlapping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
 
     ./generate_accelcands_list.sh
 
 
-3) Selection of Candidates for Acceleration
+3) Selection of Candidates for Acceleration.
 
 The MCI.txt file can be used subsequently by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup) under various Costs (Area budgets or HW resources).
 
