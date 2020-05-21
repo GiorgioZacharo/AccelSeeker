@@ -51,13 +51,16 @@ LLVM8 can then be recompiled using make and a new Shared Object (SO) should be c
 
 # Usage
 
-First edit this line according to the path of your LLVM8 build directory:
+For testing the H.264 decoder https://github.com/adsc-hls/synthesizable_h264 synthesizable version  Xinheng Liu et al by University of Illinois at Urbana-Champaign is used.
+
+    cd h264_ir_orig
+
+First we make sure that the line in "run_sys_aw.sh" points to the path of the LLVM8 build directory:
 
     LLVM_BUILD=path/to/llvm/build
 
 1) Identification of Candidates for Acceleration and Estimation of Latency, Area and I/O    
-
-    cd h264_ir_orig
+    
     ./run_sys_aw.sh
 
 This script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
@@ -65,7 +68,7 @@ The files generated are: FCI.txt  IO.txt  LA.txt
 
 2) Merit, Cost Estimation of Candidates for Acceleration and Application of the Overlappping Rule
 
-        ./generate_accelcands_list.sh
+    ./generate_accelcands_list.sh
 
 This script generates the Merit/Cost (MC) file along with the implementation of the Overlappping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
