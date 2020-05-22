@@ -53,13 +53,27 @@ LLVM8 can then be recompiled using make and a new Shared Object (SO) should be c
 
 For testing the H.264 decoder https://github.com/adsc-hls/synthesizable_h264 synthesizable version by Xinheng Liu et al of University of Illinois at Urbana-Champaign is used.
 
-    cd h264_ir_orig
+    cd h264_decoder
 
-First we make sure that the line in "run_sys_aw.sh" points to the path of the LLVM8 build directory:
+## 1) Collect dynamic profiling information and generate the annotated  Intermediate Representation (IR) files.
+
+    cd sim
+
+We make sure that the LLVM lines in "Makefile_AccelSeeker" point to the path of the LLVM8 build and lib directory:    
+
+    BIN_DIR_LLVM=path/to/llvm/build/bin
+    LIB_DIR_LLVM=path/to/llvm/build/lib
+
+Then we run the instrumented binary with the appropriate input parameters and generate the annotated IR files using
+the profiling information.    
+
+    make profile
+
+## 2) Identification of candidates for acceleration and estimation of Latency, Area and I/O requirements.   
+
+We make sure that the LLVM_BUILD line in "run_sys_aw.sh" points to the path of the LLVM8 build directory:
 
     LLVM_BUILD=path/to/llvm/build
-
-## 1) Identification of Candidates for Acceleration and Estimation of Latency, Area and I/O requirements.   
 
 The following script invokes the AccelSeeker Analysis passes and generates the files needed to construct the final Merit/Cost estimation.
 The files generated are: FCI.txt  IO.txt  LA.txt 
@@ -67,8 +81,7 @@ The files generated are: FCI.txt  IO.txt  LA.txt
     ./run_sys_aw.sh
 
 
-
-## 2) Merit, Cost Estimation of Candidates for Acceleration and Application of the Overlapping Rule.
+## 3) Merit, Cost Estimation of candidates for acceleration and application of the Overlapping Rule.
 
 The following script generates the Merit/Cost (MC) file along with the implementation of the Overlapping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
@@ -76,13 +89,15 @@ The files generated are: MCI.txt  MC.txt
     ./generate_accelcands_list.sh
 
 
-## 3) Selection of Candidates for Acceleration.
+## 4) Selection of candidates for acceleration.
 
 The MCI.txt file can be used subsequently by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup) under various Costs (Area budgets or HW resources).
 
     ../accel_selection_algo_src/accel-find MCI.txt AREA_BUDGET
 
 e.g.  ../accel_selection_algo_src/accel-find MCI.txt 1000
+
+### Clean Up. 
 
 To delete all data files use:
 
