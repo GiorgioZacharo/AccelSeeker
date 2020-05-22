@@ -55,7 +55,7 @@ For testing the H.264 decoder https://github.com/adsc-hls/synthesizable_h264 syn
 
     cd h264_decoder
 
-## 1) Collect dynamic profiling information and generate the annotated  Intermediate Representation (IR) files.
+### 1) Collect dynamic profiling information and generate the annotated  Intermediate Representation (IR) files.
 
     cd sim
 
@@ -69,7 +69,7 @@ the profiling information.
 
     make profile
 
-## 2) Identification of candidates for acceleration and estimation of Latency, Area and I/O requirements.   
+### 2) Identification of candidates for acceleration and estimation of Latency, Area and I/O requirements.   
 
 We make sure that the LLVM_BUILD line in "run_sys_aw.sh" points to the path of the LLVM8 build directory:
 
@@ -81,7 +81,7 @@ The files generated are: FCI.txt  IO.txt  LA.txt
     ./run_sys_aw.sh
 
 
-## 3) Merit, Cost Estimation of candidates for acceleration and application of the Overlapping Rule.
+### 3) Merit, Cost Estimation of candidates for acceleration and application of the Overlapping Rule.
 
 The following script generates the Merit/Cost (MC) file along with the implementation of the Overlapping rule in the final Merit/Cost/Indexes (MCI) file.
 The files generated are: MCI.txt  MC.txt
@@ -89,7 +89,7 @@ The files generated are: MCI.txt  MC.txt
     ./generate_accelcands_list.sh
 
 
-## 4) Selection of candidates for acceleration.
+### 4) Selection of candidates for acceleration.
 
 The MCI.txt file can be used subsequently by the exact selection algorithm in order to select the subsets of the AccelSeeker candidates list that maximize Merit (Speedup) under various Costs (Area budgets or HW resources).
 
