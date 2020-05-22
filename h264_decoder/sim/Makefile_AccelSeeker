@@ -1,0 +1,86 @@
+#################################################################### 
+# 
+#	  	---  AccelSeeker Makefile ---
+#
+#  Collect dynamic profiling information and annotate it to the IR files used by AccelSeeker.
+# 
+#
+#    Georgios Zacharopoulos <georgios@seas.harvard.edu>
+#    Date: May, 2020
+#    Harvard University
+##################################################################### 
+
+# Start editing the Makefile
+
+# Paths to LLVM8 (8.0.0) (Edit the Path)
+BIN_DIR_LLVM=~georgios/llvm-8.0.0/build/bin
+LIB_DIR_LLVM=~georgios/llvm-8.0.0/build/lib
+
+# BENCH Name
+BENCH=ldecod
+
+# Add the required cmd line parameters (if needed)
+BENCH_COMMAND_LINE_PARAMETERS= input/test_qcif.264 golden/test_dec_qcif.yuv
+
+# The name of your C compiler:
+CC= $(BIN_DIR_LLVM)/clang
+
+# You may need to adjust these cc options:
+CFLAGS= $(FLAGS) -fprofile-instr-generate -fcoverage-mapping
+
+# Add the Obects needed to be compiled.
+BENCH_OBJECTS=$(OBJ)
+
+# Add the source files that are going to produce the respective IR files.
+REGIONSOURCES= $(wildcard $(SRCDIR)/*.c)      
+
+# Finish editing the Makefile
+
+# AccelSeeker Identification - Profiling IR Files Generation
+#############################################################
+
+PROF_IR = $(REGIONSOURCES:%.c=%.ir)
+FREQ_PASS = $(REGIONSOURCES:%.c=%.freq_pass)
+DBG_IR = $(REGIONSOURCES:%.c=%.dbg.ll)
+
+# Profiling
+profile:  $(BENCH)_instrumented  $(PROF_IR)
+
+%.ir: %.c 
+	$(BIN_DIR_LLVM)/clang -S -emit-llvm   -fprofile-instr-use=$(BENCH).profdata -o $@ $?
+
+
+# Generate Instrumented Binary, run it, gather the produced profiling information and generate the BENCH.profdata file.
+$(BENCH)_instrumented: $(REGIONSOURCES) #$(BENCH_OBJECTS) 
+	 $(BIN_DIR_LLVM)/clang     $(CFLAGS)  -o $@ $? 
+	./$(BENCH)_instrumented $(BENCH_COMMAND_LINE_PARAMETERS)
+	 $(BIN_DIR_LLVM)/llvm-profdata merge -output=$(BENCH).profdata default.profraw
+
+################################################
+# Debug Files
+################################################
+
+# Debug Info files.
+debug: $(DBG_IR)
+	mkdir dbg
+	mv *dbg.ll dbg/.
+%.dbg.ll: %.c
+	$(BIN_DIR_LLVM)/clang -S -emit-llvm  -g  -o $@ $?
+
+################################################
+# Profiling
+################################################
+
+# Load the default LLVM Block Frequency Pass
+freq_pass:$(FREQ_PASS)
+
+%.freq_pass:%.ir
+	$(BIN_DIR_LLVM)/opt -block-freq -analyze  $?
+
+################################################
+#  Cleanup
+################################################
+
+clean_prof_data:
+	rm  default.profraw *.profdata *instrumented $(SRCDIR)/*.ir testresult.yuv dependencies
+
