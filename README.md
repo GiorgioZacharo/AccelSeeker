@@ -89,6 +89,7 @@ The files generated are: MCI.txt  MC.txt
     ./generate_accelcands_list.sh
 
 The MCI.txt format is as follows:
+
 BENCHMARK-NAME ACCELERATOR-NAME MERIT(CYCLES SAVED) COST(LUTS) FUNCTION_INDEXES
 
 ### 4) Selection of candidates for acceleration.

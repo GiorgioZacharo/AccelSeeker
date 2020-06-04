@@ -1,5 +1,0 @@
-digraph "@write_luma" {
-@write_luma[weight = 1, style = filled]
-@Clip1y[weight = 1, style = filled]
-@write_luma -> @Clip1y ; 
-}

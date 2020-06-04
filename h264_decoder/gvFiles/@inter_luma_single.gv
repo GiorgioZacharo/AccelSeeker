@@ -1,9 +1,0 @@
-digraph "@inter_luma_single" {
-@inter_luma_single[weight = 1, style = filled]
-@Clip1y[weight = 1, style = filled]
-@inter_luma_single -> @Clip1y ; 
-@Clip1y[weight = 1, style = filled]
-@inter_luma_single -> @Clip1y ; 
-@Clip1y[weight = 1, style = filled]
-@inter_luma_single -> @Clip1y ; 
-}

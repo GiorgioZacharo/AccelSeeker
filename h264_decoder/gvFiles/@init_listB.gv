@@ -1,3 +1,0 @@
-digraph "@init_listB" {
-@init_listB[weight = 1, style = filled]
-}

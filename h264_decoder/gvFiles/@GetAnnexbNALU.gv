@@ -1,7 +1,0 @@
-digraph "@GetAnnexbNALU" {
-@GetAnnexbNALU[weight = 1, style = filled]
-@FindStartCode[weight = 1, style = filled]
-@GetAnnexbNALU -> @FindStartCode ; 
-@FindStartCode[weight = 1, style = filled]
-@GetAnnexbNALU -> @FindStartCode ; 
-}

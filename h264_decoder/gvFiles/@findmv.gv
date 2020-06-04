@@ -1,9 +1,0 @@
-digraph "@findmv" {
-@findmv[weight = 1, style = filled]
-@findCidx[weight = 1, style = filled]
-@findmv -> @findCidx ; 
-@median[weight = 1, style = filled]
-@findmv -> @median ; 
-@median[weight = 1, style = filled]
-@findmv -> @median ; 
-}

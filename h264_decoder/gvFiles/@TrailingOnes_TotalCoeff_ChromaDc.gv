@@ -1,7 +1,0 @@
-digraph "@TrailingOnes_TotalCoeff_ChromaDc" {
-@TrailingOnes_TotalCoeff_ChromaDc[weight = 1, style = filled]
-@bytes_reverse_32[weight = 1, style = filled]
-@TrailingOnes_TotalCoeff_ChromaDc -> @bytes_reverse_32 ; 
-@showbits[weight = 1, style = filled]
-@TrailingOnes_TotalCoeff_ChromaDc -> @showbits ; 
-}
