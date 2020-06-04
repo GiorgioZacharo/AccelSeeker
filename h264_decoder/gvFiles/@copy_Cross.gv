@@ -1,0 +1,7 @@
+digraph "@copy_Cross" {
+@copy_Cross[weight = 1, style = filled]
+@Clip3[weight = 1, style = filled]
+@copy_Cross -> @Clip3 ; 
+@Clip3[weight = 1, style = filled]
+@copy_Cross -> @Clip3 ; 
+}

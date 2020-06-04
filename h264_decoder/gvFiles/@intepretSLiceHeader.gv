@@ -1,0 +1,7 @@
+digraph "@intepretSLiceHeader" {
+@intepretSLiceHeader[weight = 1, style = filled]
+@init_listP[weight = 1, style = filled]
+@intepretSLiceHeader -> @init_listP ; 
+@init_listB[weight = 1, style = filled]
+@intepretSLiceHeader -> @init_listB ; 
+}

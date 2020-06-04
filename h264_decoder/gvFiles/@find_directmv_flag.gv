@@ -1,0 +1,3 @@
+digraph "@find_directmv_flag" {
+@find_directmv_flag[weight = 1, style = filled]
+}

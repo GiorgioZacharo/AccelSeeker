@@ -88,6 +88,8 @@ The files generated are: MCI.txt  MC.txt
 
     ./generate_accelcands_list.sh
 
+The MCI.txt format is as follows:
+BENCHMARK-NAME ACCELERATOR-NAME MERIT(CYCLES SAVED) COST(LUTS) FUNCTION_INDEXES
 
 ### 4) Selection of candidates for acceleration.
 
@@ -96,6 +98,8 @@ The MCI.txt file can be used subsequently by the exact selection algorithm in or
     ../accel_selection_algo_src/accel-find MCI.txt AREA_BUDGET
 
 e.g.  ../accel_selection_algo_src/accel-find MCI.txt 1000
+
+The unit used for area bucget by default is Look-Up Tables (LUTs).
 
 ### Clean Up. 
 

@@ -1,0 +1,7 @@
+digraph "@total_zeros" {
+@total_zeros[weight = 1, style = filled]
+@bytes_reverse_32[weight = 1, style = filled]
+@total_zeros -> @bytes_reverse_32 ; 
+@showbits[weight = 1, style = filled]
+@total_zeros -> @showbits ; 
+}

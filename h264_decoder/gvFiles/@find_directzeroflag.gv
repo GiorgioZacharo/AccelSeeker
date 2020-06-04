@@ -1,0 +1,13 @@
+digraph "@find_directzeroflag" {
+@find_directzeroflag[weight = 1, style = filled]
+@findCidx[weight = 1, style = filled]
+@find_directzeroflag -> @findCidx ; 
+@minpositive[weight = 1, style = filled]
+@find_directzeroflag -> @minpositive ; 
+@minpositive[weight = 1, style = filled]
+@find_directzeroflag -> @minpositive ; 
+@minpositive[weight = 1, style = filled]
+@find_directzeroflag -> @minpositive ; 
+@minpositive[weight = 1, style = filled]
+@find_directzeroflag -> @minpositive ; 
+}

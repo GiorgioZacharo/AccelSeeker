@@ -1,0 +1,3 @@
+digraph "@median" {
+@median[weight = 1, style = filled]
+}

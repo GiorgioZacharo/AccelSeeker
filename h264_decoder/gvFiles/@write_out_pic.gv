@@ -1,0 +1,3 @@
+digraph "@write_out_pic" {
+@write_out_pic[weight = 1, style = filled]
+}

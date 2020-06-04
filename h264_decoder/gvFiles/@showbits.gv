@@ -1,0 +1,3 @@
+digraph "@showbits" {
+@showbits[weight = 1, style = filled]
+}
