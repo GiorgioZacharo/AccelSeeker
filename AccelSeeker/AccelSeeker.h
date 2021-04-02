@@ -10,16 +10,22 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// This file identifies Single-Input, Single-Output Regions in a CFG of an
-// application and computes the Data Flow Input and Output for each Region. 
+// This file identifies and evaluates candidates for HW acceleration.
+//
+// It is part of a tool that automatically identifies and selects HW accelerators directly from 
+// the application source files. It is built within LLVM8 compiler infrastructure and consists of 
+// Analysis Passes that estimate Software (SW) latency, Hardware (HW) latency, Area and I/O requirements. 
 //
 // AccelSeeker Candidates.
 //
 //===----------------------------------------------------------------------===//
 
+#ifndef ACCELSEEKER
+#define ACCELSEEKER
+
 using namespace llvm;
 
-std::ofstream myfile; // File that Region Info are written.
+std::ofstream myfile; // File that AccelSeeker Info is written.
 
 #define M_AXI_ARRAY 700                     // LUTs per M_AXI bus array.
 #define NSECS_PER_CYCLE         10         // nSecs Per Cycle 100 MHz.
@@ -27,15 +33,15 @@ std::ofstream myfile; // File that Region Info are written.
 
 namespace {
 
-static std::string GetValueName(const Value *V) {
-  if (V) {
-    std::string name;
-    raw_string_ostream namestream(name);
-    V->printAsOperand(namestream, false);
-    return namestream.str();
-  } else
-    return "[null]";
-}
+  static std::string GetValueName(const Value *V) {
+    if (V) {
+      std::string name;
+      raw_string_ostream namestream(name);
+      V->printAsOperand(namestream, false);
+      return namestream.str();
+    } else
+      return "[null]";
+  }
 
   int find_inst(std::vector<Instruction *> list, Instruction *inst) {
 
@@ -43,7 +49,6 @@ static std::string GetValueName(const Value *V) {
       if (list[i] == inst)
         return i;
     
-  
     return -1;
   }
 
@@ -172,20 +177,8 @@ static std::string GetValueName(const Value *V) {
        return true;
       else if (F->getName() == "itrans_2")  // Non synthesizable
        return true;
-
-     
-    // else if (F->getName() == "decode_main")  // Non synthesizable
-    //   return true;
-    //     else if (F->getName() == "ProcessSlice")  // Non synthesizable
-    //   return true;
-    //     else if (F->getName() == "main")  // Non synthesizable
-     // return true;
      else if (F->getName() == "intrapred_luma_16x16")  // Non synthesizable
       return true;
-    
-    //else if (F->getName() == "total_zeros")  // Non synthesizable
-//	return true;
-
    else if (GetValueName(F) == "@0")  // Non synthesizable
       return true;
    else if (GetValueName(F) == "@1")  // Non synthesizable
@@ -492,9 +485,7 @@ static std::string GetValueName(const Value *V) {
   //
   //===---------------------------------------------------===//
 
-  float getDelayEstim(Instruction *Inst)
-  
-  {
+  float getDelayEstim(Instruction *Inst) {
 
     switch (Inst->getOpcode()) {
 
@@ -508,9 +499,6 @@ static std::string GetValueName(const Value *V) {
       return 0;
 
     case Instruction::PHI:
-    // #ifdef OLD_SETUP
-    //   return 5.299;
-    // #endif
     #ifdef SYS_AWARE
       return 4.3;
     #else
@@ -549,9 +537,6 @@ static std::string GetValueName(const Value *V) {
 
       SwitchInst *Switch = dyn_cast<SwitchInst>(&*Inst);
       unsigned int NumCases = Switch->getNumCases();
-      // #ifdef OLD_SETUP
-      //   return ceil(log2(NumCases)) * 5.2999 ;
-      // #endif
       #ifdef SYS_AWARE
         return ceil(log2(NumCases)) * 4.3 ;
       #else
@@ -585,9 +570,6 @@ static std::string GetValueName(const Value *V) {
 
 
     case Instruction::Add:
-      // #ifdef OLD_SETUP
-      //   return 9.323;
-      // #endif
       #ifdef SYS_AWARE
         return 5.3;
       #else
@@ -595,9 +577,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::FAdd: // This is not modelled properly. Or mark as forbidden.
-      // #ifdef OLD_SETUP
-      //   return 9.323;
-      // #endif
       #ifdef SYS_AWARE
         return 5.3;
       #else
@@ -605,9 +584,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::Sub:
-      // #ifdef OLD_SETUP
-      //   return 9.323;
-      // #endif
       #ifdef SYS_AWARE
         return 5.3;
       #else
@@ -615,9 +591,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::FSub: // This is not modelled properly. Or mark as forbidden.
-      // #ifdef OLD_SETUP
-      //   return 9.323;
-      // #endif
       #ifdef SYS_AWARE
         return 5.3;
       #else
@@ -625,9 +598,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::Mul:
-    // #ifdef OLD_SETUP
-    //   return 9.9;
-    // #endif
       #ifdef SYS_AWARE
         return 8.5;
       #else
@@ -635,9 +605,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::FMul:  // This is not modelled proerly. Or mark as forbidden.
-      // #ifdef OLD_SETUP
-      //   return 9.9;
-      // #endif
       #ifdef SYS_AWARE
         return 8.5;
       #else
@@ -645,9 +612,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::UDiv:
-      // #ifdef OLD_SETUP
-      //   return 59.535;
-      // #endif
       #ifdef SYS_AWARE
         return 49.5;
       #else
@@ -655,9 +619,6 @@ static std::string GetValueName(const Value *V) {
       #endif
     
     case Instruction::SDiv:
-      // #ifdef OLD_SETUP
-      //   return 59.7;
-      // #endif
       #ifdef SYS_AWARE
         return 53;
       #else
@@ -665,9 +626,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::FDiv:
-      // #ifdef OLD_SETUP
-      //   return 59.7;
-      // #endif
       #ifdef SYS_AWARE
         return 53;
       #else
@@ -675,9 +633,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::URem:
-      // #ifdef OLD_SETUP
-      //   return 59.636;
-      // #endif
       #ifdef SYS_AWARE
         return 52.6;
       #else
@@ -685,9 +640,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::SRem:
-      // #ifdef OLD_SETUP
-      //   return 59.636;
-      // #endif
       #ifdef SYS_AWARE
         return 55.4;
       #else
@@ -695,9 +647,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::FRem:
-      // #ifdef OLD_SETUP
-      //   return 59.636;
-      // #endif
       #ifdef SYS_AWARE
         return 55.4;
       #else
@@ -711,9 +660,6 @@ static std::string GetValueName(const Value *V) {
       if (Operand_two->getType()->isSingleValueType()) // Shift by a single value (e.g. integer)
         return 0;
 
-      // #ifdef OLD_SETUP
-      //   return 8.862;
-      // #endif
       #ifdef SYS_AWARE
         return 5.5;
       #else
@@ -729,9 +675,6 @@ static std::string GetValueName(const Value *V) {
       if (Operand_two->getType()->isSingleValueType()) // Shift by a single value (e.g. integer)
         return 0;
       
-      // #ifdef OLD_SETUP
-      //   return 8.862;
-      // #endif
       #ifdef SYS_AWARE
         return 5.5;
       #else
@@ -745,10 +688,7 @@ static std::string GetValueName(const Value *V) {
 
       if (Operand_two->getType()->isSingleValueType()) // Shift by a single value (e.g. integer)
         return 0;
-      
-      // #ifdef OLD_SETUP
-      //   return 9.052;
-      // #endif
+    
       #ifdef SYS_AWARE
         return 6.6;
       #else
@@ -757,9 +697,6 @@ static std::string GetValueName(const Value *V) {
     }
 
     case Instruction::And:
-      // #ifdef OLD_SETUP
-      //   return 8.862;
-      // #endif
       #ifdef SYS_AWARE
         return 4.3;
       #else
@@ -767,9 +704,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::Or:
-      // #ifdef OLD_SETUP
-      //   return 8.862;
-      // #endif
       #ifdef SYS_AWARE
         return 4.3;
       #else
@@ -777,9 +711,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::Xor:
-      // #ifdef OLD_SETUP
-      //   return 8.862;
-      // #endif
       #ifdef SYS_AWARE
         return 4.3;
       #else
@@ -787,9 +718,6 @@ static std::string GetValueName(const Value *V) {
       #endif
 
     case Instruction::Select: // Same as Phi.
-      // #ifdef OLD_SETUP
-      //   return 5.299;
-      // #endif
       #ifdef SYS_AWARE
         return 4.3;
       #else
@@ -801,30 +729,16 @@ static std::string GetValueName(const Value *V) {
       ICmpInst *Icmp = dyn_cast<ICmpInst>(&*Inst);
 
       if (Icmp->isEquality())
-        // #ifdef OLD_SETUP
-        //   return 9.276;
-        // #endif
         #ifdef SYS_AWARE
           return 5;
         #else
         return 0.15;
         #endif
       else
-        // #ifdef OLD_SETUP
-        //   return 9.389;
-        // #endif
-       //#ifdef SYS_AWARE
-      //    return 4.8;
        return 0;
-        //#else
-        //  return 0.37;
-        //#endif      
     }
 
     case Instruction::FCmp: // This is my estimation!
-      // #ifdef OLD_SETUP
-      //   return 9.276;
-      // #endif
       #ifdef SYS_AWARE
         return 5;
       #else
@@ -875,7 +789,7 @@ static std::string GetValueName(const Value *V) {
 
   //Area Estimation for each DFG Node/Istruction in LUTs
 // RegionSeeker  
-unsigned int getAreaEstim(Instruction *Inst)
+  unsigned int getAreaEstim(Instruction *Inst)
   {
 
     switch (Inst->getOpcode()) {
@@ -927,7 +841,6 @@ unsigned int getAreaEstim(Instruction *Inst)
     {
 
       SwitchInst *Switch = dyn_cast<SwitchInst>(&*Inst);
-      //errs() << " Number of switches is  " << Switch->getNumCases() << "\t";
       unsigned int NumCases = Switch->getNumCases();
       #ifdef SYS_AWARE
         return 16 * NumCases;
@@ -936,7 +849,7 @@ unsigned int getAreaEstim(Instruction *Inst)
         return 33 * NumCases;
       #endif
     }
-      
+
     case Instruction::IndirectBr: 
       return 0;
 
@@ -991,7 +904,6 @@ unsigned int getAreaEstim(Instruction *Inst)
 
     case Instruction::Mul:
       #ifdef SYS_AWARE
-        //return 267;
      errs() << "Mul" << "\n";
         return 0;
       #else
@@ -1000,7 +912,6 @@ unsigned int getAreaEstim(Instruction *Inst)
       
     case Instruction::FMul:
       #ifdef SYS_AWARE
-        //return 267;
      errs() << "FMul" << "\n";
         return 0;
       #else
@@ -1009,7 +920,6 @@ unsigned int getAreaEstim(Instruction *Inst)
 
     case Instruction::UDiv:
       #ifdef SYS_AWARE
-       // return 1055;
     errs() << "UDiv" << "\n";
     return 320;
       #else
@@ -1018,7 +928,6 @@ unsigned int getAreaEstim(Instruction *Inst)
 
     case Instruction::SDiv:
       #ifdef SYS_AWARE
-         // return 1214;
     errs() << "SDiv" << "\n";
     return 320;
       #else
@@ -1027,7 +936,6 @@ unsigned int getAreaEstim(Instruction *Inst)
 
     case Instruction::FDiv:
       #ifdef SYS_AWARE
-        // return 1214;
     errs() << "FDiv" << "\n";
     return 320;
       #else
@@ -1036,7 +944,6 @@ unsigned int getAreaEstim(Instruction *Inst)
 
     case Instruction::URem:
       #ifdef SYS_AWARE
-        // return 1122;
      errs() << "URem" << "\n";
      return 320;
       #else
@@ -1045,7 +952,6 @@ unsigned int getAreaEstim(Instruction *Inst)
 
     case Instruction::SRem:
       #ifdef SYS_AWARE
-       // return 1299;
      errs() << "SRem" << "\n";
      return 320;
       #else
@@ -1054,7 +960,6 @@ unsigned int getAreaEstim(Instruction *Inst)
 
     case Instruction::FRem:
       #ifdef SYS_AWARE
-        //return 1299;
      errs() << "FRem" << "\n";
         return 320;
       #else
@@ -1199,7 +1104,7 @@ unsigned int getAreaEstim(Instruction *Inst)
     }// end of switch.
   }
 
-    // Get Area Estimation for a Block iterator of a Function.
+  // Get Area Estimation for a Block iterator of a Function.
   unsigned int getAreaOfBBInFunction(Function::iterator &BB) {
 
     unsigned int AreaOfBB = 0;
@@ -1218,13 +1123,13 @@ unsigned int getAreaEstim(Instruction *Inst)
     unsigned int AreaofFunction = 0;
 
     for(Function::iterator BB = F->begin(), E = F->end(); BB != E; ++BB)
-      //AreaofFunction += getAreaOfBBInUMSq(&*BB);
+      //AreaofFunction += getAreaOfBBInUMSq(&*BB); // Alternative Area Estimation.
       AreaofFunction += getAreaOfBBInFunction(BB);
 
     return AreaofFunction;
   }
 
-    // SW Cost in Cycles estimation for a single BB. (Without Frequency of each BB)
+  // SW Cost in Cycles estimation for a single BB. (Without Frequency of each BB)
   //
   long int getSWCostOfBB(BasicBlock *BB) {
 
@@ -1238,7 +1143,7 @@ unsigned int getAreaEstim(Instruction *Inst)
   }
 
 
- // Compute the Critical Path of HW for Delay inside the BB of a Region or Function in nSecs.
+  // Compute the Critical Path of HW for Delay inside the BB of a Region or Function in nSecs.
   //
   //
   float getDelayOfBB(BasicBlock *BB) {
@@ -1296,23 +1201,6 @@ unsigned int getAreaEstim(Instruction *Inst)
       }
     }
 
-
-      // for (int i=0; i< send_node.size(); i++)
-      //   errs() << " sending Nodes " << *send_node[i] << "\n"; // My debugging Info!
-           
-      //      for (int i=0; i< receive_node.size(); i++)
-      //         errs() << " REceiving Nodes " << *receive_node[i] << "\n"; // My debugging Info!
-
-      // errs() << "\n\n"  ;
-
-      // for (int i=0; i< send_node.size(); i++) {
-
-      //   errs() << " Edges " << *send_node[i] << "  --->     " <<  *receive_node[i] << "\n"; // My debugging Info!
-
-
-      // }
-
-
     if (send_node.size() > 0 && receive_node.size() >0) {
 
       // Critical Path Estimation. 
@@ -1334,7 +1222,6 @@ unsigned int getAreaEstim(Instruction *Inst)
           int position =0;
 
           //float delay_path_estimation;
-
           while(BottomNodes.size() >0) {  
 
             CurrentNode = BottomNodes[0];
@@ -1373,19 +1260,15 @@ unsigned int getAreaEstim(Instruction *Inst)
      int LoadsAndStores   = getNumberofLoadsandStores(BB);
      float LoadStoreDelay = LoadsAndStores * 10;
 
-     //errs() << " Loads/Stores :  " << LoadsAndStores << "\n";
      
      // Compare Memory to Computation Delay
      if (LoadStoreDelay > DelayOfBB)
       DelayOfBB = LoadStoreDelay;
   #endif
 
-    //errs() << " Delay Estimation for BB is : " << format("%.8f", DelayOfBB) << "\n";
-      
-    // for (int i=0; i< DelayPaths.size(); i++)
-    //   errs() << " Delays " << format("%.8f", DelayPaths[i]) << "\n"; // My debugging Info!
-
     return DelayOfBB;
   }
 
 }
+
+#endif

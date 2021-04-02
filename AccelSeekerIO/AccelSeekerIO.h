@@ -12,28 +12,36 @@
 //
 // This file identifies and evaluates candidates for HW acceleration.
 //
+// It is part of a tool that automatically identifies and selects HW accelerators directly from 
+// the application source files. It is built within LLVM8 compiler infrastructure and consists of 
+// Analysis Passes that estimate Software (SW) latency, Hardware (HW) latency, Area and I/O requirements. 
+// This file identifies and evaluates candidates for HW acceleration.
+//
 // AccelSeeker Candidates IO requirements and nested Call Function Indexes.
 //
 //===----------------------------------------------------------------------===//
 
+#ifndef ACCELSEEKER_IO
+#define ACCELSEEKER_IO
 
 using namespace llvm;
 
 std::ofstream IO_file; // File that I/O info is written.
 std::ofstream myfile; // File that I/O info is written.
 
+#define MAX_INSTANCES 8
 
 namespace {
 
-static std::string GetValueName(const Value *V) {
-  if (V) {
-    std::string name;
-    raw_string_ostream namestream(name);
-    V->printAsOperand(namestream, false);
-    return namestream.str();
-  } else
-    return "[null]";
-}
+  static std::string GetValueName(const Value *V) {
+    if (V) {
+      std::string name;
+      raw_string_ostream namestream(name);
+      V->printAsOperand(namestream, false);
+      return namestream.str();
+    } else
+      return "[null]";
+  }
 
 
   int find_function(std::vector<Function *> list, Function *Fun) {
@@ -146,20 +154,8 @@ static std::string GetValueName(const Value *V) {
        return true;
       else if (F->getName() == "itrans_2")  // Non synthesizable
        return true;
-
-     
-    // else if (F->getName() == "decode_main")  // Non synthesizable
-    //   return true;
-    //     else if (F->getName() == "ProcessSlice")  // Non synthesizable
-    //   return true;
-    //     else if (F->getName() == "main")  // Non synthesizable
-     // return true;
      else if (F->getName() == "intrapred_luma_16x16")  // Non synthesizable
       return true;
-    
-    //else if (F->getName() == "total_zeros")  // Non synthesizable
-//	return true;
-
    else if (GetValueName(F) == "@0")  // Non synthesizable
       return true;
    else if (GetValueName(F) == "@1")  // Non synthesizable
@@ -172,8 +168,7 @@ static std::string GetValueName(const Value *V) {
 
   }
 
-    bool isIndirectSystemCall(Value *SV)
-  {
+  bool isIndirectSystemCall(Value *SV) {
 
     if (SV->getName() == "llvm.lifetime.start")
       return true;
@@ -241,13 +236,11 @@ static std::string GetValueName(const Value *V) {
     else if (SV->getName() == "processinterMbType") // Non synthesizable
       return true;
 
-
     else
       return false;
-
   }
 
-  //
+  // Exlude Structs from the analysis.
   //
   bool structNameIsValid(llvm::Type *type) {
 
@@ -256,10 +249,8 @@ static std::string GetValueName(const Value *V) {
     if (type->getStructName() == "struct._IO_FILE")
       return 0;
 
-
     return 1;
   }
-
 
   // Get the data of the Array type.
   //
@@ -273,9 +264,8 @@ static std::string GetValueName(const Value *V) {
       llvm::Type *array_type    = type->getArrayElementType();
       int NumberOfArrayElements     = type->getArrayNumElements();
       int SizeOfElement           = array_type->getPrimitiveSizeInBits();
-
-     errs() << "\n\t Array " << *array_type << " "  << NumberOfArrayElements<< " " << SizeOfElement  << " \n ";
-
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Array " << *array_type << " "  << NumberOfArrayElements<< " " << SizeOfElement  << " \n ";
       TotalNumberOfArrayElements *= NumberOfArrayElements;
 
       if (SizeOfElement) {
@@ -303,6 +293,7 @@ static std::string GetValueName(const Value *V) {
       for (unsigned int i=0; i<NumberOfElements; i++){
 
         llvm::Type *element_type = type->getStructElementType(i);
+        // Enabled only for Debbugging.
         // errs() << "\n\t Struct -- Arg: " << i << " " << *element_type << " "
         //     << type->getStructName() << " \n ";
 
@@ -310,66 +301,54 @@ static std::string GetValueName(const Value *V) {
           struct_data +=  getTypeDataPtr(element_type);
   
       }
-      arg_data = struct_data;
-      //return arg_data;    
+      arg_data = struct_data;   
     }
 
     // Scalar Case
     else if ( type->getPrimitiveSizeInBits()) {
-      errs() << "\n\t Primitive Size  " <<  type->getPrimitiveSizeInBits()  << " \n ";
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Primitive Size  " <<  type->getPrimitiveSizeInBits()  << " \n ";
       arg_data = type->getPrimitiveSizeInBits();
-      //return arg_data;
-
     }
  
     // Vector Case
     else if ( type->isVectorTy()) {
-      errs() << "\n\t Vector  " <<  type->getPrimitiveSizeInBits()  << " \n ";
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Vector  " <<  type->getPrimitiveSizeInBits()  << " \n ";
       arg_data = type->getPrimitiveSizeInBits();
-      //return arg_data;
     }
-
 
     // Array Case
     else if(type->isArrayTy()) {
       arg_data = getTypeArrayData(type);
-      errs() << "\n\t Array Data " << arg_data << " \n ";
-      //return arg_data;
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Array Data " << arg_data << " \n ";
     }
 
     return arg_data;
   }
 
-  // Get the data of teh type.
+  // Get the data of an LLVM Type.
   //
   long int getTypeData(llvm::Type *type){
 
     long int arg_data =0;
 
     if ( type->isPointerTy()) {
-     errs() << "\n\t Pointer Type!  " << " \n --------\n";
-     unsigned int ptr_instances = 0;
-     // bool flag = false;
-     //errs() << "\n\t Pointer Type 2!  " << " \n --------\n";	
+      //errs() << "\n\t Pointer Type!  " << " \n --------\n";
+      unsigned int ptr_instances = 0;
       llvm::Type *Pointer_Type = type->getPointerElementType();
 
-     //errs() << "\n\t Pointer Type 3!  " << " \n --------\n";
+      //errs() << "\n\t Pointer Type 3!  " << " \n --------\n";
       while (Pointer_Type->isPointerTy()) {
-	//flag = true;
-	ptr_instances++;
-     errs() << "\n\t Pointer Type 4!  " << " \n --------\n";
-	Pointer_Type = Pointer_Type->getPointerElementType();
-
-	// errs() << "\n\t Pointer Type!  " << ptr_instances << " \n --------\n";
-
-	// Safe break - may need t obe reviewed/removed
-	if (ptr_instances > 8)
-		return  arg_data;	
+        ptr_instances++;
+        // errs() << "\n\t Pointer Type 4!  " << " \n --------\n";
+        Pointer_Type = Pointer_Type->getPointerElementType();
+	      // Safe break - may need to be reviewed/removed.
+        if (ptr_instances > MAX_INSTANCES)
+		      return  arg_data;	
       }
-     	//errs() << "\n\t Pointer Type 5!  " << " \n --------\n";
-     //if (Pointer_Type->isPointerTy())
      	arg_data+=getTypeDataPtr(Pointer_Type);
-
     }
 
     // Struct Case
@@ -381,6 +360,7 @@ static std::string GetValueName(const Value *V) {
       for (unsigned int i=0; i<NumberOfElements; i++){
 
         llvm::Type *element_type = type->getStructElementType(i);
+        // Enabled only for Debbugging.
         // errs() << "\n\t Struct -- Arg: " << i << " " << *element_type << " "
         //     << type->getStructName() << " \n ";
 
@@ -388,43 +368,42 @@ static std::string GetValueName(const Value *V) {
           struct_data +=  getTypeData(element_type);
   
       }
-      arg_data = struct_data;
-      //return arg_data;    
+      arg_data = struct_data;   
     }
 
     // Scalar Case
     else if ( type->getPrimitiveSizeInBits()) {
-      errs() << "\n\t Primitive Size  " <<  type->getPrimitiveSizeInBits()  << " \n ";
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Primitive Size  " <<  type->getPrimitiveSizeInBits()  << " \n ";
       arg_data = type->getPrimitiveSizeInBits();
-      //return arg_data;
-
     }
  
     // Vector Case
     else if ( type->isVectorTy()) {
-      errs() << "\n\t Vector  " <<  type->getPrimitiveSizeInBits()  << " \n ";
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Vector  " <<  type->getPrimitiveSizeInBits()  << " \n ";
       arg_data = type->getPrimitiveSizeInBits();
-      //return arg_data;
     }
 
 
     // Array Case
     else if(type->isArrayTy()) {
       arg_data = getTypeArrayData(type);
-      errs() << "\n\t Array Data " << arg_data << " \n ";
-      //return arg_data;
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Array Data " << arg_data << " \n ";
     }
 
     return arg_data;
   }
 
-  // It type an Array type? 
+  // Is type an Array type? 
   //
   bool isArray(llvm::Type *type){
 
     if ( type->isPointerTy()){
       llvm::Type *Pointer_Type = type->getPointerElementType();
-       errs() << "\n\t Pointer " << " \n ";
+      // Enabled only for Debbugging.
+      //errs() << "\n\t Pointer " << " \n ";
       isArray(Pointer_Type);
     }
 
@@ -434,6 +413,8 @@ static std::string GetValueName(const Value *V) {
       return true;
     }
 
-      return false;
+    return false;
   }
-    
+}
+
+#endif

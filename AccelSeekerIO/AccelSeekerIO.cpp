@@ -12,6 +12,11 @@
 //
 // This file identifies and evaluates candidates for HW acceleration.
 //
+// It is part of a tool that automatically identifies and selects HW accelerators directly from 
+// the application source files. It is built within LLVM8 compiler infrastructure and consists of 
+// Analysis Passes that estimate Software (SW) latency, Hardware (HW) latency, Area and I/O requirements. 
+// This file identifies and evaluates candidates for HW acceleration.
+//
 // AccelSeeker Candidates IO requirements and nested Call Function Indexes.
 //
 //===----------------------------------------------------------------------===//
@@ -58,11 +63,9 @@ namespace {
     std::vector<Function *> Function_list; // Global Function List
     std::vector<StringRef> Function_Names_list; // Global Function List Names
 
-
-
     AccelSeekerIO() : FunctionPass(ID) {}
 
-    // Run on the whole app.
+    // Run Analysis on the entire application (module).
     bool runOnFunction(Function &F){
  
      if (!isSystemCall(&F)){
@@ -74,14 +77,11 @@ namespace {
         for (unsigned int i=0; i< Function_list.size(); i++)
           errs() << GetValueName(Function_list[i]) << "\n";
 
-        errs() << "\n\n Get the calls within Functions : " << "\n";
-        getAccelSeekerIO(&F);
-
-      
+        errs() << "\n\n Get the calls within Functions and IO information : " << "\n";
+        getAccelSeekerIO(&F);      
       }
       return false;
     }
-
 
     // Populate the list with all Functions of the app *except* for the System Calls.
     //
@@ -94,267 +94,137 @@ namespace {
         Function_list.push_back(F);
         Function_Names_list.push_back(GetValueName(F));
       }
-
       return true;
     }
 
-
-      virtual void getAccelSeekerIO(Function *F) {
-
-  
-        // LoopInfo &LI = getAnalysis<LoopInfoWrapperPass>().getLoopInfo();
-        // ScalarEvolution &SE = getAnalysis<ScalarEvolutionWrapperPass>().getSE();
-
-        //std::string Function_Name = F->getName();
-        std::string Function_Name = GetValueName(F);
-       
-        // 1
-        //
-
-        long int InputData = getInputFunction(F);
-
-         IO_file.open ("IO.txt", std::ofstream::out | std::ofstream::app); 
-         IO_file << Function_Name << " " << InputData << "\n";
-         IO_file.close();
-
-      
-
-    
-
-      // 2
-      //    
-      int F_index = find_function(Function_list, F);
-    	// if (Function_Name != "@decode_main" && Function_Name != "@main" 
-    	//    && Function_Name != "@3"  
-    	//    && Function_Name != "@7" && Function_Name != "@ProcessSlice") { 
-
-          myfile.open ("FCI.txt", std::ofstream::out | std::ofstream::app); 
-          myfile << Function_Name << " " << F_index << " " ;
-          myfile.close();
-            getIndexesOfCalledFunctions(F);
-
-          myfile.open ("FCI.txt", std::ofstream::out | std::ofstream::app); 
-          myfile << "\n";
-          myfile.close(); 
-    	// }
-
-
-
-
-        //3 Print gv files for Caller -> Callee Relationship.
-
-  //     if (Function_Name != "@decode_main" && Function_Name != "@main" 
-  //          && Function_Name != "@3" 
-		// && Function_Name != "@ProcessSlice"
-	 //         ) { 
-         myfile.open (Function_Name +".gv", std::ofstream::out | std::ofstream::app);
-         myfile << "digraph \"" << Function_Name << "\" {" << "\n";
-         myfile << Function_Name << "[weight = 1, style = filled]" << "\n"; 
-         myfile.close();
-
-        
-         printRealFreqOfCalledFunsGraphs(F, Function_Name);
-
-         myfile.open (Function_Name +".gv", std::ofstream::out | std::ofstream::app);
-         myfile << "}" << "\n";
-         myfile.close();
-
-	 //    }
-
-    
-    } // End of RunOnFunction
-
-
-    // Helper Function to log Function names and teh included calls in a text file.
+    // AccelSeeker IO Analysis (IO data Estimation, log Indexes and print Function Call Graphs).
     //
-    //
-    void getFunctionNamesCalls(Function *F, int Level) {
+    void getAccelSeekerIO(Function *F) {
 
       std::string Function_Name = GetValueName(F);
+     
+      // Gather the data requierements of every Function.
+      //
+      long int InputData = getInputOfFunction(F);
 
-      myfile.open ("FCN.txt", std::ofstream::out | std::ofstream::app); 
-      myfile << "L"<< Level << ": " << Function_Name << "\t";
+       IO_file.open ("IO.txt", std::ofstream::out | std::ofstream::app); 
+       IO_file << Function_Name << " " << InputData << "\n";
+       IO_file.close();
+
+      // Log the indexes of every function and every function call included in 
+      // a given function to construct the conflict graph.
+      //    
+      int F_index = find_function(Function_list, F);
+
+      myfile.open ("FCI.txt", std::ofstream::out | std::ofstream::app); 
+      myfile << Function_Name << " " << F_index << " " ;
+      myfile.close();
+      getIndexesOfCalledFunctions(F);
+      myfile.open ("FCI.txt", std::ofstream::out | std::ofstream::app); 
+      myfile << "\n";
       myfile.close();
 
-
-      for(Function::iterator BB = F->begin(), E = F->end(); BB != E; ++BB) {
-
-        // Iterate inside the basic block.
-        for(BasicBlock::iterator BI = BB->begin(), BE = BB->end(); BI != BE; ++BI){
-         
-           if(CallInst *Call = dyn_cast<CallInst>(BI)) {
-
-            
-            if (Call->getCalledFunction()) {
-
-              if (!isSystemCall(Call->getCalledFunction())) {
-
-                Function *Calee = Call->getCalledFunction();
-                Level++;
-                getFunctionNamesCalls(Calee, Level);
-                Level--;         
-
-              }
-            }
-            
-            else{
-
-              Value* V=Call->getCalledValue();
-              Value* SV = V->stripPointerCasts();
-
-              if (!isIndirectSystemCall(SV) ) {
-
-       
-                //StringRef Indirect_Called_Name = SV->getName();
-                StringRef Indirect_Called_Name = GetValueName(SV);
-                //errs() <<"\t" << F->getName() << "\t -->\t" << Indirect_Called_Name << "\n";
-
-                int fun_index = find_function_name(Function_Names_list, Indirect_Called_Name);
-
-                if (fun_index >=0) { // Is it in our list?
-
-                  errs() << "Indirect Call in Our list! " << "\n";
-
-                  Function *Calee = Function_list[fun_index];
-                  Level++;
-                  getFunctionNamesCalls(Calee, Level);
-                  Level--;
-      
-                }
-                else
-                  errs() << "Indirect Call *not* in Our list! \t" << Indirect_Called_Name << "\n";
-
-              }
-            } // End of Else branch.
-           
-           } // End of Call Instruction
-         } // End of For - BB Iterator
-
-        } // End of For - Function Iterator
-    }
-
+      // Print the call graph of every function.  
+      // gv files for Caller -> Callee Relationship. 
+      myfile.open (Function_Name +".gv", std::ofstream::out | std::ofstream::app);
+      myfile << "digraph \"" << Function_Name << "\" {" << "\n";
+      myfile << Function_Name << "[weight = 1, style = filled]" << "\n"; 
+      myfile.close();
+      printCallGraphsOfFunctions(F, Function_Name);
+      myfile.open (Function_Name +".gv", std::ofstream::out | std::ofstream::app);
+      myfile << "}" << "\n";
+      myfile.close();    
+    } 
 
     // Input Requirements from parameter List.
     //
-    //
-    long int getInputFunction(Function *F) {
-      long  int InputData = 0; // Bits
+    long int getInputOfFunction(Function *F) {
+      long  int InputDataBits = 0; // Bits
       long int InputDataBytes = 0; // Bytes
-
       int arg_index=0;
 
-      //Function::ArgumentListType & Arg_List = F->getArgumentList();
-
-      //for (Function::arg_iterator AB = Arg_List.begin(), AE = Arg_List.end(); AB != AE; ++AB){
       for (Function::arg_iterator AB = F->arg_begin(), AE = F->arg_end(); AB != AE; ++AB){
 
         llvm::Argument *Arg = &*AB;
         llvm::Type *Arg_Type = Arg->getType();
-
-
-
-
-        errs() << "\n\n Argument : " << arg_index << "  --->  " << *AB << " -- " << *Arg_Type  << " --  \n ";
-
         long int InputDataOfArg = getTypeData(Arg_Type);
-        errs() << "\n\n Argument : " << arg_index << "  -- Input Data --  " << InputDataOfArg<< " \n "; 
-
-        InputData += InputDataOfArg;
+        // Enabled only for Debbugging.
+        //errs() << "\n\n Argument : " << arg_index << "  --->  " << *AB << " -- " << *Arg_Type  << " --  \n ";
+        //errs() << "\n\n Argument : " << arg_index << "  -- Input Data --  " << InputDataOfArg<< " \n "; 
+        InputDataBits += InputDataOfArg;
         arg_index++;
-
        }
 
-       errs() << "\n\n Total Input Data Bits :  " << InputData << " \n ";
-       InputDataBytes = InputData/8; 
-       errs() << "\n\n Total Input Data Bytes :  " << InputDataBytes << " \n ";
-
+       InputDataBytes = InputDataBits / 8; 
+       // Enabled only for Debbugging.
+       //errs() << "\n\n Total Input Data Bits :  " << InputDataBits << " \n ";
+       //errs() << "\n\n Total Input Data Bytes :  " << InputDataBytes << " \n ";
       return InputDataBytes;
     }
 
 
     // Record the Indexes of the Function Calls within each Function.
     //
-    //
     void getIndexesOfCalledFunctions(Function *F) {
 
-
       for(Function::iterator BB = F->begin(), E = F->end(); BB != E; ++BB) {
-
         // Iterate inside the basic block.
         for(BasicBlock::iterator BI = BB->begin(), BE = BB->end(); BI != BE; ++BI){
-         
-          if(CallInst *Call = dyn_cast<CallInst>(BI)) {
-
-            
+          if(CallInst *Call = dyn_cast<CallInst>(BI)) {            
             if (Call->getCalledFunction()) {
 
               if (!isSystemCall(Call->getCalledFunction())) {
 
                 Function *Calee = Call->getCalledFunction();
-
                 int fun_index = find_function(Function_list, Calee);
 
                 if (fun_index >=0) {
 
-                myfile.open ("FCI.txt", std::ofstream::out | std::ofstream::app); 
-                myfile << fun_index <<" ";
-                myfile.close();
-                getIndexesOfCalledFunctions(Calee);
+                  myfile.open ("FCI.txt", std::ofstream::out | std::ofstream::app); 
+                  myfile << fun_index <<" ";
+                  myfile.close();
+                  getIndexesOfCalledFunctions(Calee);
                 }
                 else{ // Not in the current list
                   // Write a function or reorder this.
-
                   Function_list.push_back(Calee);
                   int fun_index_new = find_function(Function_list, Calee);
                   
                   myfile.open ("FCI.txt", std::ofstream::out | std::ofstream::app); 
                   myfile << fun_index_new <<" ";
                   myfile.close();
-                getIndexesOfCalledFunctions(Calee);
-
+                  getIndexesOfCalledFunctions(Calee);
                 }
-
               }
             }
-          } // End of IF
+          } // End of if Call Instruction 
         } // End of For - BB Iterator
-      }
-
+      } //End of For - Function Iterator
     }
 
-        // Get Real Frequency of each candidate's Calls to Functions. 
-    // print Graphs!
+    // Print the call graph of every function
+    // (Generate gv files for Caller -> Callee Relationship.)
     //
-    void printRealFreqOfCalledFunsGraphs(Function *F, std::string TopFunName) {
+    void printCallGraphsOfFunctions(Function *F, std::string TopFunName) {
 
       std::string Function_Name = GetValueName(F);
-
       for(Function::iterator BB = F->begin(), E = F->end(); BB != E; ++BB) {
-
         // Iterate inside the basic block.
         for(BasicBlock::iterator BI = BB->begin(), BE = BB->end(); BI != BE; ++BI){
-         
-           if(CallInst *Call = dyn_cast<CallInst>(BI)) {
-
-            
+          if(CallInst *Call = dyn_cast<CallInst>(BI)) {            
             if (Call->getCalledFunction()) {
 
               if (!isSystemCall(Call->getCalledFunction())) {
 
                 Function *Calee = Call->getCalledFunction();
-                //std::string CaleeName = Calee->getName();
                 std::string CaleeName =  GetValueName(Calee);
                 
                 myfile.open (TopFunName +".gv", std::ofstream::out | std::ofstream::app);
-                // myfile << "N" << func_counter << "_" << CaleeName << "[weight = 1, style = filled]" << "\n"; 
-                // myfile << "N" << func_counter << "_" << Function_Name << " -> " << CaleeName << " ; "  << "\n";
                 myfile << CaleeName << "[weight = 1, style = filled]" << "\n"; 
                 myfile << Function_Name << " -> " << CaleeName << " ; "  << "\n";
                 myfile.close();
 
-                
-
-                printRealFreqOfCalledFunsGraphs(Calee, TopFunName);
+                printCallGraphsOfFunctions(Calee, TopFunName);
               }
             }
             
@@ -365,38 +235,30 @@ namespace {
 
               if (!isIndirectSystemCall(SV) ) {
 
-       
-                //std::string Indirect_Called_Name = SV->getName();
                 std::string Indirect_Called_Name = GetValueName(SV);
 
-                  myfile.open (TopFunName +".gv", std::ofstream::out | std::ofstream::app);
-                  myfile << Indirect_Called_Name << "[weight = 1, style = filled]" << "\n"; 
-                  myfile << Function_Name << " -> " << Indirect_Called_Name << " ; "  << "\n";
-                  myfile.close();
-      
-                
-
+                myfile.open (TopFunName +".gv", std::ofstream::out | std::ofstream::app);
+                myfile << Indirect_Called_Name << "[weight = 1, style = filled]" << "\n"; 
+                myfile << Function_Name << " -> " << Indirect_Called_Name << " ; "  << "\n";
+                myfile.close();
               }
             } // End of Else branch.
-           
-           } // End of Call Instruction
-         } // End of For - BB Iterator
-
-        } // End of For - Function Iterator
+          } // End of Call Instruction
+        } // End of For - BB Iterator
+      } // End of For - Function Iterator
     }
-
 
     virtual void getAnalysisUsage(AnalysisUsage& AU) const override {
               
-        AU.addRequired<LoopInfoWrapperPass>();
-        AU.addRequired<RegionInfoPass>();
-        AU.addRequiredTransitive<RegionInfoPass>();
-        AU.addRequiredTransitive<ScalarEvolutionWrapperPass>();
-        AU.addRequired<BlockFrequencyInfoWrapperPass>();
-        AU.setPreservesAll();
+      AU.addRequired<LoopInfoWrapperPass>();
+      AU.addRequired<RegionInfoPass>();
+      AU.addRequiredTransitive<RegionInfoPass>();
+      AU.addRequiredTransitive<ScalarEvolutionWrapperPass>();
+      AU.addRequired<BlockFrequencyInfoWrapperPass>();
+      AU.setPreservesAll();
     } 
   };
-}}
+}
 
 char AccelSeekerIO::ID = 0;
 static RegisterPass<AccelSeekerIO> X("AccelSeekerIO", "Identify IO Requirements of System Aware Accelerators");
