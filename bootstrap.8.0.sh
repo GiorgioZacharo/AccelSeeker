@@ -15,6 +15,9 @@ curl -O https://releases.llvm.org/8.0.0/compiler-rt-8.0.0.src.tar.xz
 tar xf llvm-8.0.0.src.tar.xz
 tar xf cfe-8.0.0.src.tar.xz
 tar xf compiler-rt-8.0.0.src.tar.xz
+
+rm cfe-8.0.0.src.tar.xz compiler-rt-8.0.0.src.tar.xz llvm-8.0.0.src.tar.xz
+
 mv cfe-8.0.0.src llvm-8.0.0.src/tools/clang
 mv compiler-rt-8.0.0.src llvm-8.0.0.src/projects/compiler-rt
 
@@ -30,5 +33,3 @@ cd llvm-8.0.0/build
 cmake $(pwd)/../llvm-8.0.0.src/
 cmake --build .
 #cmake --build . --target install # Option for root access - not necessary.
-
-rm cfe-8.0.0.src.tar.xz  llvm-8.0.0.src.tar.xz
